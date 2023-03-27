@@ -58,7 +58,7 @@ class CaptionTask(BaseTask):
 
         img_ids = samples["image_id"]
         for caption, img_id in zip(captions, img_ids):
-            results.append({"caption": caption, "image_id": int(img_id)})
+            results.append({"caption": caption, "image_id": img_id})
 
         return results
 

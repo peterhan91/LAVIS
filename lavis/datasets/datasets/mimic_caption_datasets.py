@@ -8,19 +8,19 @@ from lavis.datasets.datasets.caption_datasets import CaptionDataset, CaptionEval
 
 
 class MIMICCapDataset(CaptionDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, txt_path,
-                 column='findings'):
+    def __init__(self, vis_processor, text_processor, vis_root, txt_path, column):
         """
         vis_root (string): Root directory of images (e.g. coco/images/)
         txt_path (string): directory to store the annotation file
         """
-        super().__init__(vis_processor, text_processor, vis_root, 
-                         txt_path, column)
+        # super().__init__(vis_processor, text_processor, vis_root, txt_path, column)
 
         self.df = pd.read_csv(txt_path)
         self.col = column
         self.img_path = vis_root
-        self.df = self.df.filter(items=['dicom_id', column]).dropna()
+        self.df = self.df.filter(items=['dicom_id', 'indication', column]).dropna()
+        self.vis_processor = vis_processor
+        self.text_processor = text_processor
 
     def __len__(self):
         return len(self.df)
@@ -30,30 +30,33 @@ class MIMICCapDataset(CaptionDataset):
         img = Image.open(os.path.join(self.img_path, dfs['dicom_id']+'.jpg'))
         img = img.convert('RGB')
         txt = dfs[self.col]
+        txt_in = dfs['indication']
         
         image = self.vis_processor(img)
         caption = self.text_processor(txt)
+        caption_input = self.text_processor(txt_in)
 
         return {
             "image": image,
-            "text_input": caption,
+            "text_input": caption_input,  # indications
+            "text_output": caption,       # findings
             "image_id": dfs['dicom_id'],
         }        
 
 class MIMICCapEvalDataset(CaptionEvalDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, val_txt_path, 
-                 column='findings'):
+    def __init__(self, vis_processor, text_processor, vis_root, txt_path, column):
         """
         vis_root (string): Root directory of images (e.g. coco/images/)
         val_txt_root (string): directory to store the validation annotation file
         """
-        super().__init__(vis_processor, text_processor, vis_root, 
-                         val_txt_path, column)
+        # super().__init__(vis_processor, text_processor, vis_root, txt_path, column)
 
-        self.df = pd.read_csv(val_txt_path)
+        self.df = pd.read_csv(txt_path)
         self.col = column
         self.img_path = vis_root
-        self.df = self.df.filter(items=['dicom_id', column]).dropna()
+        self.df = self.df.filter(items=['dicom_id', 'indication', column]).dropna()
+        self.vis_processor = vis_processor
+        self.text_processor = text_processor
             
     def __len__(self):
         return len(self.df)
@@ -67,6 +70,7 @@ class MIMICCapEvalDataset(CaptionEvalDataset):
 
         return {
             "image": image,
+            "text_input": dfs['indication'],
             "image_id": dfs['dicom_id'],
             "instance_id": dfs['dicom_id'],
         }        

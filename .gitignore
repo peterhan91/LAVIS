@@ -155,3 +155,5 @@ debug*/
 *.gz
 
 cache/
+lavis/.DS_Store
+.DS_Store

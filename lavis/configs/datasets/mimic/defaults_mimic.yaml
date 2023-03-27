@@ -8,8 +8,8 @@ datasets:
           storage: /media/tianyu.han/mri-scratch/DeepLearning/Stanford_MIT_CHEST/MIMIC-CXR-v2.0/mimic-cxr/
       annotations:
         train:
-          storage: /media/tianyu.han/mri-scratch/DeepLearning/LAVIS/data/mimic-cxr/mimic_impressions.csv
+          storage: /media/tianyu.han/mri-scratch/DeepLearning/flamingo-mini/data/mimic_impressions.csv
           column: findings
         val:
-          storage: /media/tianyu.han/mri-scratch/DeepLearning/LAVIS/data/mimic-cxr/mimic_impressions_val.csv
+          storage: /media/tianyu.han/mri-scratch/DeepLearning/flamingo-mini/data/mimic_impressions_val.csv
           column: findings

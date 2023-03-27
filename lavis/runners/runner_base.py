@@ -387,10 +387,10 @@ class RunnerBase:
                             ), "No agg_metrics found in validation log."
 
                             agg_metrics = val_log["agg_metrics"]
-                            if agg_metrics > best_agg_metric and split_name == "val":
-                                best_epoch, best_agg_metric = cur_epoch, agg_metrics
+                            # if agg_metrics > best_agg_metric and split_name == "val":
+                            #     best_epoch, best_agg_metric = cur_epoch, agg_metrics
 
-                                self._save_checkpoint(cur_epoch, is_best=True)
+                            self._save_checkpoint(cur_epoch, is_best=False)
 
                             val_log.update({"best_epoch": best_epoch})
                             self.log_stats(val_log, split_name)

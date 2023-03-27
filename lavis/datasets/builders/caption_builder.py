@@ -6,6 +6,7 @@
 """
 import os
 import warnings
+import logging
 
 from lavis.datasets.builders.base_dataset_builder import BaseDatasetBuilder
 from lavis.datasets.datasets.mimic_caption_datasets import (
@@ -31,6 +32,10 @@ class MIMICCapBuilder(BaseDatasetBuilder):
     DATASET_CONFIG_DICT = {
         "default": "configs/datasets/mimic/defaults_mimic.yaml",
     }
+    def build_datasets(self):
+        logging.info("Building datasets...")
+        datasets = self.build()  # dataset['train'/'val'/'test']
+        return datasets
 
     def build(self):
         self.build_processors()
@@ -56,7 +61,7 @@ class MIMICCapBuilder(BaseDatasetBuilder):
             )
 
             # annotation path
-            txt_paths = ann_info.get(split).storage
+            txt_path = ann_info.get(split).storage
             column = ann_info.get(split).column
             # visual data storage path
             vis_path = vis_info.storage
@@ -69,7 +74,7 @@ class MIMICCapBuilder(BaseDatasetBuilder):
                 vis_processor=vis_processor,
                 text_processor=text_processor,
                 vis_root=vis_path,
-                txt_paths=txt_paths,
+                txt_path=txt_path,
                 column=column
             )
         return datasets
