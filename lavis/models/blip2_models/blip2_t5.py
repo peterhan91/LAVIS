@@ -5,6 +5,7 @@
  For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 """
 import logging
+import os
 
 import torch
 import torch.nn as nn
@@ -14,6 +15,7 @@ from transformers import T5TokenizerFast
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_t5 import T5Config, T5ForConditionalGeneration
+from peft import prepare_model_for_int8_training
 
 
 @registry.register_model("blip2_t5")
@@ -81,8 +83,16 @@ class Blip2T5(Blip2Base):
         self.t5_tokenizer = T5TokenizerFast.from_pretrained(t5_model)
         t5_config = T5Config.from_pretrained(t5_model)
         t5_config.dense_act_fn = "gelu"
+
+        device_map = "auto"
+        world_size = int(os.environ.get('WORLD_SIZE', 1))
+        ddp = world_size != 1
+        if ddp:
+            device_map = {'':int(os.environ.get('LOCAL_RANK') or 0)}
+
         self.t5_model = T5ForConditionalGeneration.from_pretrained(
-            t5_model, config=t5_config
+            t5_model, config=t5_config, 
+            # load_in_8bit=True, device_map=device_map
         )
 
         for name, param in self.t5_model.named_parameters():
@@ -98,6 +108,7 @@ class Blip2T5(Blip2Base):
 
         self._apply_lemmatizer = apply_lemmatizer
         self._lemmatizer = None
+        # self.t5_model = prepare_model_for_int8_training(self.t5_model)
 
     def forward(self, samples):
         image = samples["image"]

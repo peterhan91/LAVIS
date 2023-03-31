@@ -5,6 +5,7 @@
  For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 """
 import logging
+import os
 
 import torch
 from torch.cuda.amp import autocast as autocast
@@ -14,6 +15,7 @@ from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_opt import OPTForCausalLM, OPTConfig
 from transformers import AutoTokenizer
+from peft import prepare_model_for_int8_training
 
 
 @registry.register_model("blip2_opt")
@@ -75,9 +77,19 @@ class Blip2OPT(Blip2Base):
             layer.intermediate = None
 
         self.opt_tokenizer = AutoTokenizer.from_pretrained(opt_model, use_fast=False)
+
+        device_map = "auto"
+        world_size = int(os.environ.get('WORLD_SIZE', 1))
+        ddp = world_size != 1
+        if ddp:
+            device_map = {'':int(os.environ.get('LOCAL_RANK') or 0)}
         self.opt_model = OPTForCausalLM.from_pretrained(
-            opt_model, torch_dtype=torch.float16
+            opt_model, 
+            # torch_dtype=torch.float16, 
+            load_in_8bit=True,
+            device_map=device_map,
         )
+
         for name, param in self.opt_model.named_parameters():
             param.requires_grad = False
         self.eos_token_id = self.opt_tokenizer(
@@ -92,6 +104,7 @@ class Blip2OPT(Blip2Base):
         self.prompt = prompt
         prompt_tokens = self.opt_tokenizer(self.prompt, return_tensors="pt")
         self.prompt_length = prompt_tokens.attention_mask.sum(1)
+        self.opt_model = prepare_model_for_int8_training(self.opt_model)
 
     def forward(self, samples):
         image = samples["image"]

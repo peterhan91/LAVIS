@@ -5,10 +5,12 @@
 
 model:
   arch: pretrain_flant5xl
-  load_finetuned: False
+  load_finetuned: True
 
   pretrained: "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_flant5xl_vitL.pth"
   finetuned: ""
+  # finetuned: "/media/tianyu.han/mri-scratch/DeepLearning/LAVIS/lavis/output/BLIP2/Caption_mimic/20230328230/checkpoint_19.pth"
+
 
   # vit encoder
   vit_model: "clip_L"

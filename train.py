@@ -6,7 +6,6 @@
 """
 
 import argparse
-import os
 import random
 
 import numpy as np
@@ -82,7 +81,7 @@ def main():
 
     init_distributed_mode(cfg.run_cfg)
 
-    setup_seeds(cfg)
+    # setup_seeds(cfg) # seeding random engines
 
     # set after init_distributed_mode() to only log on master.
     setup_logger()
